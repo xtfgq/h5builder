@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<link href="../css/mui.min.css" rel="stylesheet" />
+		<style type="text/css">
+			body,
+			html,
+			#allmap {
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+				margin: 10;
+				font-family: "微软雅黑";
+			}
+		</style>
+		<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=IuRqX0hMiTPnMwGKweGYBb3OnC20YICE"></script>
+		<script type="text/javascript" src="../js/convertor.js"></script>
+	</head>
+
+	<body>
+		<header class="mui-bar mui-bar-nav white">
+			<a class="mui-action-back mui-icon mui-icon-left-nav mui-pull-left"></a>
+			<h1 class="mui-title">位置</h1>
+		</header>
+		<div id="allmap"></div>
+	</body>
+
+</html>
+<script src="../js/mui.min.js"></script>
+<script type="text/javascript">
+	mui.init({
+		swipeBack: true //启用右滑关闭功能
+	});
+	var posi = null;
+	mui.plusReady(function() {
+		posi = plus.geolocation.getCurrentPosition(function(p) {
+			console.log("Geolocation\nLatitude:" + p.coords.latitude + "\nLongitude:" + p.coords.longitude + "\nAltitude:" + p.coords.altitude);
+			console.log("street = " + p.address.street);
+			console.log("poiName = " + p.address.poiName);
+			console.log("coordsType = " + p.coordsType);
+			console.log("timestamp = " + p.timestamp);
+			console.log("addresses = " + p.addresses);
+			var gpsPoint = new BMap.Point(p.coords.longitude, p.coords.latitude);
+			BMap.Convertor.translate(gpsPoint, 0, initMap); //转换坐标
+
+		}, function(e) {
+			console.log("Geolocation error: " + e.message);
+		}, {
+			enableHighAccuracy: true
+		});
+	});
+	function initMap(point){ 
+//初始化地图 
+var map = new BMap.Map("allmap"); 
+map.addControl(new BMap.NavigationControl()); 
+map.addControl(new BMap.ScaleControl()); 
+map.addControl(new BMap.OverviewMapControl()); 
+map.centerAndZoom(point, 15); 
+map.addOverlay(new BMap.Marker(point));
+// var geoc = new BMap.Geocoder();    
+// geoc.getLocation(point, function (rs) {    
+//                        
+//              var addComp = rs.addressComponents;    
+//              alert(addComp.district + ", " + addComp.street + ", " + addComp.streetNumber);    
+//              alert('您的位置：'+rs.point.lng+','+rs.point.lat);  
+//          });    
+} 
+
+	mui.back = function() {
+		var btn = ["确定", "取消"];
+		mui.confirm('确认关闭当前窗口？', 'Hello MUI', btn, function(e) {
+			if(e.index == 0) {
+				// 关闭位置监听  并返回
+				plus.geolocation.clearWatch(posi);
+				mui.currentWebview.close();
+			}
+		});
+	}
+</script>
